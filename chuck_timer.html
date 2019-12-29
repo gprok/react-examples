@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chuck Norris every 10 sec</title>
+</head>
+<body>
+    <h1>Get a Chuck Norris quote every 10 sec.</h1>
+    <div id="chuck"></div>
+
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+
+    <script type="text/babel">
+        class Chuck extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    quote: "Wait for Chuck Norris quote ...",
+                    toggleOn: true
+                };
+                this.handleClick = this.handleClick.bind(this);
+            }
+
+            componentDidMount() {
+                this.startTimer();
+            }
+
+            startTimer() {
+                this.timerID = setInterval(
+                    () => this.getQuote(),
+                    10000
+                );
+            }
+
+            componentWillUnmount() {
+                this.stopTimer();
+            }
+
+            stopTimer() {
+                clearInterval(this.timerID);
+            }
+
+            getQuote() {
+                var self = this;
+                axios.get('https://api.chucknorris.io/jokes/random')
+                    .then(function (response) {
+                        self.setState({quote: response.data.value});
+                    });
+            }
+
+            handleClick() {
+                if(this.state.toggleOn) {
+                    console.log("Stopping ...");
+                    this.stopTimer();
+                    this.setState({toggleOn: false});
+                }
+                else {
+                    console.log("Starting ...");
+                    this.startTimer();
+                    this.setState({toggleOn: true});
+                }
+            }
+
+            render() {
+                return (
+                    <div>
+                        <button onClick={this.handleClick}>
+                            {this.state.toggleOn ? 'STOP' : 'START'}
+                        </button>
+                        <h2>{this.state.quote}</h2>
+                    </div>
+                );
+            }
+        }
+
+        ReactDOM.render(
+            <Chuck />,
+            document.getElementById("chuck")
+        );
+    </script>
+
+</body>
+</html>
