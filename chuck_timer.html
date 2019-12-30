@@ -14,14 +14,44 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 
     <script type="text/babel">
+        function ListItem(props) {
+            return (
+                <li key={props.key}>
+                    {props.value}
+                </li>
+            );
+        }
+
+        function ItemsList(props) {
+            const items = props.items;
+            const title = props.title;
+            if(props.items.length == 0) {
+                return "";
+            }
+            const listItems = items.map(item =>
+                <ListItem key={item.id} value={item.quote} />
+            );
+            return (
+                <div className="item_list">
+                    <h3>{title}</h3>
+                    <ul>
+                        {listItems}
+                    </ul>
+                </div>
+            );
+        }
+
         class Chuck extends React.Component {
             constructor(props) {
                 super(props);
                 this.state = {
                     quote: "Wait for Chuck Norris quote ...",
-                    toggleOn: true
+                    quoteId: "None",
+                    toggleOn: true,
+                    saved: []
                 };
                 this.handleClick = this.handleClick.bind(this);
+                this.saveQuote = this.saveQuote.bind(this);
             }
 
             componentDidMount() {
@@ -47,6 +77,7 @@
                 var self = this;
                 axios.get('https://api.chucknorris.io/jokes/random')
                     .then(function (response) {
+                        self.setState({quoteId: response.data.id});
                         self.setState({quote: response.data.value});
                     });
             }
@@ -64,13 +95,28 @@
                 }
             }
 
+            saveQuote() {
+                const found = this.state.saved.some(q => q.id === this.state.quoteId);
+                if(!found) {
+                    var newQuote = {
+                        id: this.state.quoteId,
+                        quote: this.state.quote
+                    };
+                    this.setState({saved: [...this.state.saved, newQuote]})
+                }
+            }
+
             render() {
                 return (
                     <div>
                         <button onClick={this.handleClick}>
                             {this.state.toggleOn ? 'STOP' : 'START'}
                         </button>
+                        <button onClick={this.saveQuote}>
+                            SAVE
+                        </button>
                         <h2>{this.state.quote}</h2>
+                        <ItemsList title="Saved" items={this.state.saved} />
                     </div>
                 );
             }
